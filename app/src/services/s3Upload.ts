@@ -4,17 +4,27 @@ import { logger } from "../logging";
 import crypto from "crypto";
 import path from "path";
 
+// accessKeyId: process.env.AWS_ACCESS_KEY_ID || "AKIAQO2GIIDMQNJYRZNU",
+        // secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY || "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",
+
 class S3UploadService {
   private s3Client: S3Client;
   private bucketName: string;
   private cdnUrl: string;
 
   constructor() {
+    // Temporary log to verify environment variables
+    console.log('AWS Credentials Check:', {
+      accessKeyExists: !!process.env.AWS_ACCESS_KEY_ID,
+      secretKeyExists: !!process.env.AWS_SECRET_ACCESS_KEY,
+      region: constants.S3.REGION
+    });
+
     this.s3Client = new S3Client({
       region: constants.S3.REGION,
       credentials: {
-        accessKeyId: process.env.AWS_ACCESS_KEY_ID || "AKIAQO2GIIDMQNJYRZNU",
-        secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY || "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",
+        accessKeyId: process.env.AWS_ACCESS_KEY_ID || "",
+        secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY || ""
       },
     });
     this.bucketName = constants.S3.BUCKET_NAME;
