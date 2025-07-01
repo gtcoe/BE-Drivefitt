@@ -4,9 +4,6 @@ import { logger } from "../logging";
 import crypto from "crypto";
 import path from "path";
 
-// accessKeyId: process.env.AWS_ACCESS_KEY_ID || "AKIAQO2GIIDMQNJYRZNU",
-        // secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY || "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",
-
 class S3UploadService {
   private s3Client: S3Client;
   private bucketName: string;
