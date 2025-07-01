@@ -152,19 +152,32 @@ const constants = {
     BUCKET_NAME: process.env.AWS_S3_BUCKET_NAME || "drivefitt",
     REGION: process.env.AWS_REGION || "ap-south-1",
     CDN_URL: process.env.AWS_CLOUDFRONT_URL || "https://da8nru77lsio9.cloudfront.net",
-    MAX_FILE_SIZE: 5 * 1024 * 1024, // 5MB
-    ALLOWED_TYPES: ["image/jpeg", "image/jpg", "image/png", "image/webp"],
+    MAX_FILE_SIZE: 10 * 1024 * 1024, // 10MB
+    ALLOWED_TYPES: ["image/jpeg", "image/jpg", "image/png", "image/webp", "image/svg+xml", "image/svg"],
     UPLOAD_PATHS: {
       BLOGS: "images/",
       CAREERS: "images/",
       PROFILES: "images/",
       GENERAL: "images/",
+      ORIGINAL_IMAGES: "original-images/",
+      ORIGINAL_WEBP: "original-webp-images/",
+      COMPRESSED_WEBP: "images/",
     },
   },
 
   SVG_PROCESSING: {
     MAX_FILE_SIZE: 10 * 1024 * 1024, // 10MB for SVG files
     ALLOWED_TYPES: ["image/svg+xml", "image/svg"],
+    DEFAULT_QUALITY: 80,
+    DEFAULT_WIDTH: 1920,
+    DEFAULT_HEIGHT: 1080,
+    MIN_QUALITY: 10,
+    MAX_QUALITY: 100,
+  },
+
+  IMAGE_PROCESSING: {
+    MAX_FILE_SIZE: 10 * 1024 * 1024, // 10MB
+    ALLOWED_TYPES: ["image/jpeg", "image/jpg", "image/png", "image/svg+xml", "image/svg"],
     DEFAULT_QUALITY: 80,
     DEFAULT_WIDTH: 1920,
     DEFAULT_HEIGHT: 1080,

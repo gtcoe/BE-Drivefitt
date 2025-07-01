@@ -130,32 +130,19 @@ class UploadController {
 
   async convertSvgToWebP(req: Request, res: Response): Promise<void> {
     try {
-      const { uploadPath = "GENERAL", quality, width, height, maintainAspectRatio } = req.body;
+      const { quality, width, height, maintainAspectRatio } = req.body;
       
       if (!req.file) {
         const response = new ResponseModel(false, 400);
-        response.setMessage("No SVG file provided");
+        response.setMessage("No image file provided");
         res.status(400).json(response);
         return;
       }
-
-      const validation = imageProcessingService.validateSvgFile(req.file);
-      if (!validation.isValid) {
-        const response = new ResponseModel(false, 400);
-        response.setMessage(validation.error || "Invalid SVG file");
-        res.status(400).json(response);
-        return;
-      }
-
-      const validUploadPaths = Object.keys(constants.S3.UPLOAD_PATHS);
-      const finalUploadPath = validUploadPaths.includes(uploadPath) 
-        ? uploadPath as keyof typeof constants.S3.UPLOAD_PATHS
-        : "GENERAL";
 
       const conversionOptions = {
-        quality: quality ? Math.max(constants.SVG_PROCESSING.MIN_QUALITY, Math.min(constants.SVG_PROCESSING.MAX_QUALITY, parseInt(quality))) : constants.SVG_PROCESSING.DEFAULT_QUALITY,
-        width: width ? parseInt(width) : constants.SVG_PROCESSING.DEFAULT_WIDTH,
-        height: height ? parseInt(height) : constants.SVG_PROCESSING.DEFAULT_HEIGHT,
+        quality: quality ? Math.max(constants.IMAGE_PROCESSING.MIN_QUALITY, Math.min(constants.IMAGE_PROCESSING.MAX_QUALITY, parseInt(quality))) : constants.IMAGE_PROCESSING.DEFAULT_QUALITY,
+        width: width ? parseInt(width) : undefined,
+        height: height ? parseInt(height) : undefined,
         maintainAspectRatio: maintainAspectRatio !== 'false'
       };
 
@@ -165,38 +152,65 @@ class UploadController {
         conversionOptions
       );
 
-      if (!processingResult.success || !processingResult.processedFile) {
+      if (!processingResult.success || !processingResult.processedFile || !processingResult.originalWebpFile || !processingResult.originalFile) {
         const response = new ResponseModel(false, 400);
-        response.setMessage(processingResult.error || "SVG processing failed");
+        response.setMessage(processingResult.error || "Image processing failed");
         res.status(400).json(response);
         return;
       }
 
-      const uploadResult = await s3UploadService.uploadFile(processingResult.processedFile, finalUploadPath);
+      // Upload to all three folders
+      const [compressedUpload, originalWebpUpload, originalUpload] = await Promise.all([
+        s3UploadService.uploadFile(processingResult.processedFile, "COMPRESSED_WEBP"),
+        s3UploadService.uploadFile(processingResult.originalWebpFile, "ORIGINAL_WEBP"),
+        s3UploadService.uploadFile(processingResult.originalFile, "ORIGINAL_IMAGES")
+      ]);
 
-      if (uploadResult.success) {
+      if (compressedUpload.success && originalWebpUpload.success && originalUpload.success) {
         const response = new ResponseModel(true, 200);
-        response.setMessage("SVG converted to WebP and uploaded successfully");
+        response.setMessage("Image processed and uploaded to all folders successfully");
         response.setData("uploadResult", {
-          url: uploadResult.url,
+          compressedWebp: {
+            url: compressedUpload.url,
+            sizeKB: Number((processingResult.processedFile.size / 1024).toFixed(2)),
+            folder: "images/"
+          },
+          originalWebp: {
+            url: originalWebpUpload.url,
+            sizeKB: Number((processingResult.originalWebpFile.size / 1024).toFixed(2)),
+            folder: "original-webp-images/"
+          },
+          originalImage: {
+            url: originalUpload.url,
+            sizeKB: Number((processingResult.originalFile.size / 1024).toFixed(2)),
+            folder: "original-images/"
+          },
           originalName: req.file.originalname,
           convertedName: processingResult.processedFile.originalname,
-          originalSize: req.file.size,
-          convertedSize: processingResult.processedFile.size,
           compressionRatio: processingResult.metadata?.compressionRatio,
           conversionOptions,
-          uploadPath: finalUploadPath,
-          metadata: processingResult.metadata
+          metadata: {
+            originalFormat: processingResult.metadata?.originalFormat,
+            originalSizeKB: processingResult.metadata?.originalSize,
+            convertedSizeKB: processingResult.metadata?.convertedSize,
+            compressionRatio: processingResult.metadata?.compressionRatio,
+            width: processingResult.metadata?.width,
+            height: processingResult.metadata?.height
+          }
         });
         res.status(200).json(response);
       } else {
         const response = new ResponseModel(false, 400);
-        response.setMessage(uploadResult.error || "Upload failed");
+        response.setMessage("Upload failed: " + [
+          !compressedUpload.success ? "Compressed WebP: " + compressedUpload.error : "",
+          !originalWebpUpload.success ? "Original WebP: " + originalWebpUpload.error : "",
+          !originalUpload.success ? "Original Image: " + originalUpload.error : ""
+        ].filter(Boolean).join(", "));
         res.status(400).json(response);
       }
 
     } catch (error) {
-      logger.error("SVG conversion controller error:", error);
+      logger.error("Image conversion controller error:", error);
       const response = new ResponseModel(false, 500);
       response.setMessage("Internal server error");
       res.status(500).json(response);
@@ -210,7 +224,6 @@ class UploadController {
       response.setData("config", {
         maxFileSize: constants.S3.MAX_FILE_SIZE,
         allowedTypes: constants.S3.ALLOWED_TYPES,
-        uploadPaths: Object.keys(constants.S3.UPLOAD_PATHS),
         maxFileSizeMB: constants.S3.MAX_FILE_SIZE / 1024 / 1024,
         svgProcessing: {
           maxFileSize: constants.SVG_PROCESSING.MAX_FILE_SIZE,
@@ -221,10 +234,7 @@ class UploadController {
             max: constants.SVG_PROCESSING.MAX_QUALITY,
             default: constants.SVG_PROCESSING.DEFAULT_QUALITY
           },
-          defaultDimensions: {
-            width: constants.SVG_PROCESSING.DEFAULT_WIDTH,
-            height: constants.SVG_PROCESSING.DEFAULT_HEIGHT
-          }
+          note: "If width/height not provided, original dimensions will be used"
         }
       });
       res.status(200).json(response);

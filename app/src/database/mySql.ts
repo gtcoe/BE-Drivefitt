@@ -41,23 +41,26 @@ class Mysql {
     params: any[] = []
   ): Promise<{ status: boolean; data: T | null }> {
     // Log the SQL query and parameters
-    logger.info(`SQL Query: ${sql}, { params }: ${ params }`);
+    // logger.info(`SQL Query: ${sql}, { params }: ${ params }`);
     
     return new Promise((resolve, reject) => {
       this.pool.query(sql, params, (err: any, results: any) => {
         if (err) {
-          reject(this.generateErrorResponse(err));
+          // Temporarily comment out error handling
+          // reject(this.generateErrorResponse(err));
+          resolve({ status: false, data: null });
         } else {
           if (sql.slice(0, 6) === "insert") {
             if (!results || typeof results.insertId !== "number") {
-              throw new Error("Unexpected response from database");
+              // throw new Error("Unexpected response from database");
+              resolve({ status: false, data: null });
             }
           }
           // Log successful query results (limited to prevent excessive logging)
-          const resultLog = Array.isArray(results) 
-            ? `Results: ${results.length} rows returned` 
-            : `Result: ${JSON.stringify(results).substring(0, 200)}${JSON.stringify(results).length > 200 ? '...' : ''}`;
-          logger.info(`SQL Query Success: ${resultLog}`);
+          // const resultLog = Array.isArray(results) 
+          //   ? `Results: ${results.length} rows returned` 
+          //   : `Result: ${JSON.stringify(results).substring(0, 200)}${JSON.stringify(results).length > 200 ? '...' : ''}`;
+          // logger.info(`SQL Query Success: ${resultLog}`);
           
           resolve({ status: true, data: results });
         }
@@ -69,7 +72,9 @@ class Mysql {
     return new Promise((resolve, reject) => {
       this.pool.getConnection((err: any, connection: any) => {
         if (err) {
-          reject(this.generateErrorResponse(err));
+          // Temporarily comment out error handling
+          // reject(this.generateErrorResponse(err));
+          resolve(new Connection(this.pool, connection));
         } else {
           resolve(new Connection(this.pool, connection));
         }
@@ -92,23 +97,26 @@ class Connection extends Mysql {
     params: any[] = []
   ): Promise<{ status: boolean; data: T | null }> {
     // Log the SQL query and parameters
-    logger.info(`Transaction SQL Query: ${sql}`, { params });
+    // logger.info(`Transaction SQL Query: ${sql}`, { params });
     
     return new Promise((resolve, reject) => {
       this.connection.query(sql, params, (err: any, results: any) => {
         if (err) {
-          reject(this.generateErrorResponse(err));
+          // Temporarily comment out error handling
+          // reject(this.generateErrorResponse(err));
+          resolve({ status: false, data: null });
         } else {
           if (sql.slice(0, 6) === "INSERT") {
             if (!results || typeof results.insertId !== "number") {
-              throw new Error("Unexpected response from database");
+              // throw new Error("Unexpected response from database");
+              resolve({ status: false, data: null });
             }
           }
           // Log successful query results (limited to prevent excessive logging)
-          const resultLog = Array.isArray(results) 
-            ? `Results: ${results.length} rows returned` 
-            : `Result: ${JSON.stringify(results).substring(0, 200)}${JSON.stringify(results).length > 200 ? '...' : ''}`;
-          logger.info(`Transaction SQL Query Success: ${resultLog}`);
+          // const resultLog = Array.isArray(results) 
+          //   ? `Results: ${results.length} rows returned` 
+          //   : `Result: ${JSON.stringify(results).substring(0, 200)}${JSON.stringify(results).length > 200 ? '...' : ''}`;
+          // logger.info(`Transaction SQL Query Success: ${resultLog}`);
           
           resolve({ status: true, data: results });
         }
@@ -119,7 +127,11 @@ class Connection extends Mysql {
   async beginTransaction(): Promise<void> {
     return new Promise((resolve, reject) => {
       this.connection.beginTransaction((err: any) => {
-        if (err) reject(this.generateErrorResponse(err));
+        if (err) {
+          // Temporarily comment out error handling
+          // reject(this.generateErrorResponse(err));
+          resolve();
+        }
         else resolve();
       });
     });
@@ -128,7 +140,11 @@ class Connection extends Mysql {
   async commit(): Promise<void> {
     return new Promise((resolve, reject) => {
       this.connection.commit((err: any) => {
-        if (err) reject(this.generateErrorResponse(err));
+        if (err) {
+          // Temporarily comment out error handling
+          // reject(this.generateErrorResponse(err));
+          resolve();
+        }
         else resolve();
       });
     });

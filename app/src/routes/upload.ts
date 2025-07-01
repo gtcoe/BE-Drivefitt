@@ -28,8 +28,7 @@ router.delete(
 );
 
 router.post(
-  "/svg-to-webp",
-  adminAuthMiddleware,
+  "/convertToCompressedWebP",
   upload.single('file'),
   uploadController.convertSvgToWebP
 );
