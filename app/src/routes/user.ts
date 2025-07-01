@@ -1,73 +1,31 @@
-import userController from "../controllers/user";
-import hasPermission from "../middleware/roleAuthMiddleware";
-import requestValidator from "../middleware/requestValidatorMiddleware";
-import userRequestValidationConfig from "../config/request/user";
-import constants from "../config/constants/constants";
-import { express, NextFunction, Router } from "../app";
+import { Router } from "express";
+import {
+  registerUser,
+  loginUser,
+  getUserProfile,
+  updateUserProfile,
+  createUserDetails,
+  createSubscription,
+  getAllUsers,
+  getAllSubscriptions,
+} from "../controllers/user";
+import userAuthMiddleware from "../middleware/userAuthMiddleware";
+import adminAuthMiddleware from "../middleware/adminAuthMiddleware";
 
-// Helper middleware to assign role-based permissions
-const withAuth = (roles: number[]) => [
-  (req: any, _: any, next: NextFunction) => {
-    req.type_required = roles;
-    next();
-  },
-  hasPermission,
-];
+const router = Router();
 
-// Initialize router
-const userRouter: Router = express.Router();
+// Public routes for Brand Website (no authentication required)
+router.post("/register", registerUser);
+router.post("/login", loginUser);
+router.post("/user-details", createUserDetails);
+router.post("/subscription", createSubscription);
 
-//Done
-userRouter
-  .route("/:id")
-  .get(
-    ...withAuth([
-      constants.USER_TABLE.TYPE.ADMIN,
-      constants.USER_TABLE.TYPE.MANAGER,
-      constants.USER_TABLE.TYPE.CLIENT,
-    ]),
-    requestValidator(userRequestValidationConfig.getById),
-    userController.getById
-  );
+// Protected user routes (requires user authentication)
+router.get("/profile", userAuthMiddleware, getUserProfile);
+router.put("/profile", userAuthMiddleware, updateUserProfile);
 
-//Done
-// Get all users
-userRouter
-  .route("/")
-  .get(
-    ...withAuth([constants.USER_TABLE.TYPE.ADMIN]),
-    requestValidator(userRequestValidationConfig.get),
-    userController.getAll
-  );
+// Admin routes (requires admin authentication)
+router.get("/admin/users", adminAuthMiddleware, getAllUsers);
+router.get("/admin/subscriptions", adminAuthMiddleware, getAllSubscriptions);
 
-//Done
-// Add user
-userRouter
-  .route("/create")
-  .post(
-    ...withAuth([constants.USER_TABLE.TYPE.ADMIN]),
-    requestValidator(userRequestValidationConfig.add),
-    userController.addUser
-  );
-
-//Done
-// Update user status
-userRouter
-  .route("/status")
-  .post(
-    ...withAuth([constants.USER_TABLE.TYPE.ADMIN]),
-    requestValidator(userRequestValidationConfig.updateStatus),
-    userController.updateStatus
-  );
-
-// Search users
-//Done
-userRouter
-  .route("/search")
-  .post(
-    ...withAuth([constants.USER_TABLE.TYPE.ADMIN]),
-    requestValidator(userRequestValidationConfig.search),
-    userController.search
-  );
-
-export default userRouter;
+export default router; 

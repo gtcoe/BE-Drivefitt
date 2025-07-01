@@ -32,11 +32,8 @@ const setupMiddleware = (app: Application) => {
   const allowedOrigins = [
     'http://localhost:3000',
     'http://localhost:3001',
-    'https://be-visa-tracker.vercel.app',
-    'https://visa-tracker-gilt.vercel.app',
-    'https://visa-tracker.vercel.app',
-    'https://visaistic.vercel.app',
-    'https://fe-visa-tracker-gtcoes-projects.vercel.app',
+    'https://drivefitt-admin.vercel.app',
+    'https://drivefitt-dashboard.vercel.app',
     // Add your production frontend URL here
   ];
 
@@ -75,7 +72,7 @@ const setupMiddleware = (app: Application) => {
       if (isLogged) {
         logger.info(
           `api request - ${
-            (req.token && "driver:" + req.token.driverId) || ""
+            (req.body && req.body.token_user_email) || ""
           } ` +
             JSON.stringify({
               url: req.originalUrl,
