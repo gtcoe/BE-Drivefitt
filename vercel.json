@@ -12,6 +12,11 @@
       "dest": "build/src/index.js"
     }
   ],
+  "functions": {
+    "build/src/index.js": {
+      "maxDuration": 30
+    }
+  },
   "env": {
     "NODE_ENV": "production"
   }

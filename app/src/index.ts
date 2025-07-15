@@ -1,8 +1,8 @@
-import dotenv from 'dotenv';
-import path from 'path';
+import dotenv from "dotenv";
+import path from "path";
 
 // Load environment variables from .env file
-dotenv.config({ path: path.join(__dirname, '../.env') });
+dotenv.config({ path: path.join(__dirname, "../.env") });
 
 import { Application, NextFunction } from "express";
 import { app } from "./app";
@@ -36,31 +36,34 @@ const setupMiddleware = (app: Application) => {
   );
   // Allow requests from specific origins
   const allowedOrigins = [
-    'http://localhost:3000',
-    'http://localhost:3001',
-    'http://localhost:8082',
-    'https://drivefitt-admin.vercel.app',
-    'https://drivefitt-dashboard.vercel.app',
+    "http://localhost:3000",
+    "http://localhost:3001",
+    "http://localhost:8082",
+    "https://drivefitt-admin.vercel.app",
+    "https://drivefitt-dashboard.vercel.app",
     // Add your production frontend URL here
   ];
 
   const corsOptions = {
-    origin: function (origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) {
+    origin: function (
+      origin: string | undefined,
+      callback: (err: Error | null, allow?: boolean) => void
+    ) {
       // For development or when no origin is provided (like Postman requests)
-      if (!origin || process.env.NODE_ENV === 'development') {
+      if (!origin || process.env.NODE_ENV === "development") {
         callback(null, true);
         return;
       }
-      
+
       if (allowedOrigins.indexOf(origin) !== -1) {
         callback(null, true);
       } else {
-        callback(new Error('Not allowed by CORS'));
+        callback(new Error("Not allowed by CORS"));
       }
     },
-    credentials: true,  // Allow cookies if needed
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization', 'Auth_token']
+    credentials: true, // Allow cookies if needed
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization", "Auth_token"],
   };
   app.use(cors(corsOptions));
   app.disable("x-powered-by");
@@ -78,9 +81,7 @@ const setupMiddleware = (app: Application) => {
     res.send = (body: any) => {
       if (isLogged) {
         logger.info(
-          `api request - ${
-            (req.body && req.body.token_user_email) || ""
-          } ` +
+          `api request - ${(req.body && req.body.token_user_email) || ""} ` +
             JSON.stringify({
               url: req.originalUrl,
               request: req.body,
@@ -125,21 +126,23 @@ const keepDatabaseAlive = async () => {
 // Start Server
 const startServer = () => {
   setupMiddleware(app);
-  // configureAWS();
-  // require("./routes")();
-  // import("./routes").then((module) => module.default());
-  // const routes =  import("./routes");
-  // routes.default();
   setInterval(keepDatabaseAlive, 5000);
-  
+
   // Use require for CommonJS modules
   const routes = require("./routes");
   app.use("/api", routes.default);
-  
-  app.listen(PORT, () => {
-    console.log(`🚀 Server running on port ${PORT}`);
-  });
+
+  // For local development
+  if (process.env.NODE_ENV !== "production") {
+    app.listen(PORT, () => {
+      console.log(`🚀 Server running on port ${PORT}`);
+    });
+  }
 };
 
-// Start Application
+// Initialize the app
 startServer();
+
+// Export for Vercel serverless functions
+module.exports = app;
+module.exports.default = app;
