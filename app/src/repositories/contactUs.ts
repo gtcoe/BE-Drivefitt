@@ -192,10 +192,49 @@ const ContactUsRepository = () => {
     }
   };
 
+  const createContactUs = async (contactUsData: {
+    first_name: string;
+    last_name: string;
+    email: string;
+    phone: string;
+    message: string;
+  }): Promise<ContactUsDBResponse> => {
+    try {
+      const sql = `
+        INSERT INTO ${tableName} (first_name, last_name, email, phone, message)
+        VALUES (?, ?, ?, ?, ?)
+      `;
+      
+      const params = [
+        contactUsData.first_name,
+        contactUsData.last_name,
+        contactUsData.email,
+        contactUsData.phone,
+        contactUsData.message
+      ];
+
+      const result = await MySql.query(sql, params);
+      
+      if (result.status && result.data && result.data.insertId) {
+
+        return {
+          status: true,
+          message: "Contact us entry created successfully"
+        };
+      }
+
+      return { status: false, message: "Failed to create contact us entry" };
+    } catch (error) {
+      logger.error(`Error in ContactUsRepository.createContactUs: ${generateError(error)}`);
+      return { status: false, message: "Failed to create contact us entry" };
+    }
+  };
+
   return {
     getContactUsEntries,
     getContactUsCount,
     getAllContactUsForExport,
+    createContactUs,
   };
 };
 

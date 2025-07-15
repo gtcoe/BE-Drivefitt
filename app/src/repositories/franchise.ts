@@ -222,10 +222,51 @@ const FranchiseRepository = () => {
     }
   };
 
+  const createFranchiseInquiry = async (franchiseData: {
+    contact_person: string;
+    email: string;
+    phone: string;
+    city: string;
+    message: string;
+    status: number;
+  }): Promise<FranchiseDBResponse> => {
+    try {
+      const sql = `
+        INSERT INTO ${tableName} (contact_person, email, phone, city, why_franchise, status)
+        VALUES (?, ?, ?, ?, ?, ?)
+      `;
+      
+      const params = [
+        franchiseData.contact_person,
+        franchiseData.email,
+        franchiseData.phone,
+        franchiseData.city,
+        franchiseData.message,
+        franchiseData.status
+      ];
+
+      const result = await MySql.query(sql, params);
+      
+      if (result.status && result.data && result.data.insertId) {
+
+        return {
+          status: true,
+          message: "Franchise inquiry created successfully"
+        };
+      }
+
+      return { status: false, message: "Failed to create franchise inquiry" };
+    } catch (error) {
+      logger.error(`Error in FranchiseRepository.createFranchiseInquiry: ${generateError(error)}`);
+      return { status: false, message: "Failed to create franchise inquiry" };
+    }
+  };
+
   return {
     getFranchiseInquiries,
     getFranchiseCount,
     getAllFranchiseForExport,
+    createFranchiseInquiry,
   };
 };
 

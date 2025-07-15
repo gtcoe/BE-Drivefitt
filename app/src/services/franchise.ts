@@ -117,9 +117,46 @@ const FranchiseService = () => {
     }
   };
 
+  const createFranchiseInquiry = async (franchiseData: {
+    contact_person: string;
+    email: string;
+    phone: string;
+    city: string;
+    message: string;
+    status: number;
+  }): Promise<Response> => {
+    const response = new Response(false);
+
+    try {
+      const result = await franchiseRepository.createFranchiseInquiry(franchiseData);
+
+      if (!result.status) {
+        response.setStatusCode(500);
+        response.setMessage(result.message || constants.ERROR_MESSAGES.SERVER_ERROR);
+        return response;
+      }
+
+      // Clear cache after creating new entry
+      cacheService.clearCacheByKey(moduleKey);
+
+      response.setStatus(true);
+      response.setStatusCode(201);
+      response.setData("franchise", result.data);
+      response.setMessage("Franchise inquiry submitted successfully");
+      return response;
+
+    } catch (error) {
+      logger.error(`Error in FranchiseService.createFranchiseInquiry: ${generateError(error)}`);
+      response.setStatusCode(500);
+      response.setMessage(constants.ERROR_MESSAGES.SERVER_ERROR);
+      return response;
+    }
+  };
+
   return {
     getFranchiseInquiries,
     exportFranchiseData,
+    createFranchiseInquiry,
   };
 };
 

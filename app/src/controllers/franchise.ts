@@ -71,9 +71,42 @@ const FranchiseController = () => {
     }
   };
 
+  const createFranchiseInquiry = async (req: Request, res: Response): Promise<void> => {
+    const response = new ResponseModel(false);
+    try {
+      const { fullName, emailAddress, phoneNumber, proposedCity, additionalMessage } = req.body;
+
+      // Validate required fields
+      if (!fullName || !emailAddress || !phoneNumber || !proposedCity) {
+        response.setStatusCode(400);
+        response.setMessage("Full name, email, phone number and city are required");
+        res.status(400).send(response);
+        return;
+      }
+
+      const franchiseData = {
+        contact_person: fullName,
+        email: emailAddress,
+        phone: phoneNumber,
+        city: proposedCity,
+        message: additionalMessage || '',
+        status: 1 // New inquiry
+      };
+
+      const result = await franchiseService.createFranchiseInquiry(franchiseData);
+      res.status(result.statusCode).send(result);
+    } catch (e) {
+      logger.error(`Error in FranchiseController.createFranchiseInquiry: ${generateError(e)}`);
+      response.setStatusCode(500);
+      response.setMessage("Internal Server Error");
+      res.status(500).send(response);
+    }
+  };
+
   return {
     getFranchiseInquiries,
     exportFranchiseData,
+    createFranchiseInquiry,
   };
 };
 

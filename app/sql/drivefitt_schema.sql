@@ -144,13 +144,13 @@ CREATE TABLE contact_us (
 -- Franchise Inquiries Table
 CREATE TABLE franchise_inquiries (
     id INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
-    business_name VARCHAR(150) NOT NULL,
-    contact_person VARCHAR(100) NOT NULL,
-    email VARCHAR(100) NOT NULL,
-    phone VARCHAR(20) NOT NULL,
-    location VARCHAR(150) NOT NULL,
-    city VARCHAR(100) NOT NULL,
-    state VARCHAR(100) NOT NULL,
+    business_name VARCHAR(150)  NULL,
+    contact_person VARCHAR(100)  NULL,
+    email VARCHAR(100)  NULL,
+    phone VARCHAR(20)  NULL,
+    location VARCHAR(150)  NULL,
+    city VARCHAR(100)  NULL,
+    state VARCHAR(100)  NULL,
     investment_capacity DECIMAL(15,2) NULL,
     experience_years INT NULL,
     business_background TEXT NULL,
@@ -160,7 +160,6 @@ CREATE TABLE franchise_inquiries (
     assigned_to INT NULL,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    FOREIGN KEY (assigned_to) REFERENCES admins(id)
 );
 
 -- User Login Data Table (for tracking user login activities) - Reviewed

@@ -117,9 +117,45 @@ const ContactUsService = () => {
     }
   };
 
+  const createContactUs = async (contactUsData: {
+    first_name: string;
+    last_name: string;
+    email: string;
+    phone: string;
+    message: string;
+  }): Promise<Response> => {
+    const response = new Response(false);
+
+    try {
+      const result = await contactUsRepository.createContactUs(contactUsData);
+
+      if (!result.status) {
+        response.setStatusCode(500);
+        response.setMessage(result.message || constants.ERROR_MESSAGES.SERVER_ERROR);
+        return response;
+      }
+
+      // Clear cache after creating new entry
+      cacheService.clearCacheByKey(moduleKey);
+
+      response.setStatus(true);
+      response.setStatusCode(201);
+      response.setData("contactUs", result.data);
+      response.setMessage("Contact form submitted successfully");
+      return response;
+
+    } catch (error) {
+      logger.error(`Error in ContactUsService.createContactUs: ${generateError(error)}`);
+      response.setStatusCode(500);
+      response.setMessage(constants.ERROR_MESSAGES.SERVER_ERROR);
+      return response;
+    }
+  };
+
   return {
     getContactUsEntries,
     exportContactUsData,
+    createContactUs,
   };
 };
 

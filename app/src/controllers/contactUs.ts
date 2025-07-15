@@ -67,9 +67,41 @@ const ContactUsController = () => {
     }
   };
 
+  const createContactUs = async (req: Request, res: Response): Promise<void> => {
+    const response = new ResponseModel(false);
+    try {
+      const { firstName, lastName, email, phone, message } = req.body;
+
+      // Validate required fields
+      if (!firstName || !phone) {
+        response.setStatusCode(400);
+        response.setMessage("First name and phone are required");
+        res.status(400).send(response);
+        return;
+      }
+
+      const contactUsData = {
+        first_name: firstName,
+        last_name: lastName || '',
+        email: email || '',
+        phone: phone,
+        message: message || ''
+      };
+
+      const result = await contactUsService.createContactUs(contactUsData);
+      res.status(result.statusCode).send(result);
+    } catch (e) {
+      logger.error(`Error in ContactUsController.createContactUs: ${generateError(e)}`);
+      response.setStatusCode(500);
+      response.setMessage("Internal Server Error");
+      res.status(500).send(response);
+    }
+  };
+
   return {
     getContactUsEntries,
     exportContactUsData,
+    createContactUs,
   };
 };
 
