@@ -17,7 +17,7 @@ import { setRequestContext } from "./hooks/asyncHooks";
 // import s3Config from "./app/config/s3BucketConfig";
 
 // Load environment variables
-const PORT = process.env.PORT ? parseInt(process.env.PORT) : 8081;
+const PORT = process.env.PORT ? parseInt(process.env.PORT) : 8082;
 // const ENV = process.env.NODE_ENV || "development";
 // const AWS_REGION = process.env.AWS_REGION || s3Config[ENV]?.REGION;
 // const AWS_ACCESS_KEY_ID = process.env.AWS_ACCESS_KEY_ID || s3Config[ENV]?.ACCESS_KEY_ID;
@@ -38,6 +38,7 @@ const setupMiddleware = (app: Application) => {
   const allowedOrigins = [
     'http://localhost:3000',
     'http://localhost:3001',
+    'http://localhost:8082',
     'https://drivefitt-admin.vercel.app',
     'https://drivefitt-dashboard.vercel.app',
     // Add your production frontend URL here

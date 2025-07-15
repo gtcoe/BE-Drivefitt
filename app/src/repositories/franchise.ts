@@ -2,7 +2,10 @@ import MySql from "../database/mySql";
 import { logger } from "../logging";
 import { generateError } from "../services/util";
 import constants from "../config/constants/drivefitt-constants";
-import { Franchise, FranchiseSearchFilters } from "../models/Franchise/franchise";
+import {
+  Franchise,
+  FranchiseSearchFilters,
+} from "../models/Franchise/franchise";
 
 export interface FranchiseDBResponse {
   status: boolean;
@@ -50,7 +53,8 @@ const FranchiseRepository = () => {
       }
 
       if (filters.search) {
-        whereClause += " AND (business_name LIKE ? OR contact_person LIKE ? OR email LIKE ? OR phone LIKE ?)";
+        whereClause +=
+          " AND (business_name LIKE ? OR contact_person LIKE ? OR email LIKE ? OR phone LIKE ?)";
         const searchTerm = `%${filters.search}%`;
         params.push(searchTerm, searchTerm, searchTerm, searchTerm);
       }
@@ -81,18 +85,24 @@ const FranchiseRepository = () => {
         ORDER BY created_at DESC 
         LIMIT ? OFFSET ?
       `;
-      
+
       params.push(limit, offset);
-      
+
       const result = await MySql.query<Franchise[]>(sql, params);
       return result;
     } catch (error) {
-      logger.error(`Error in FranchiseRepository.getFranchiseInquiries: ${generateError(error)}`);
+      logger.error(
+        `Error in FranchiseRepository.getFranchiseInquiries: ${generateError(
+          error
+        )}`
+      );
       return { status: false, message: "Failed to fetch franchise inquiries" };
     }
   };
 
-  const getFranchiseCount = async (filters: FranchiseSearchFilters = {}): Promise<CountDBResponse> => {
+  const getFranchiseCount = async (
+    filters: FranchiseSearchFilters = {}
+  ): Promise<CountDBResponse> => {
     try {
       let whereClause = "WHERE 1=1";
       const params: any[] = [];
@@ -118,7 +128,8 @@ const FranchiseRepository = () => {
       }
 
       if (filters.search) {
-        whereClause += " AND (business_name LIKE ? OR contact_person LIKE ? OR email LIKE ? OR phone LIKE ?)";
+        whereClause +=
+          " AND (business_name LIKE ? OR contact_person LIKE ? OR email LIKE ? OR phone LIKE ?)";
         const searchTerm = `%${filters.search}%`;
         params.push(searchTerm, searchTerm, searchTerm, searchTerm);
       }
@@ -145,19 +156,25 @@ const FranchiseRepository = () => {
 
       const sql = `SELECT COUNT(*) as count FROM ${tableName} ${whereClause}`;
       const result = await MySql.query<{ count: number }[]>(sql, params);
-      
+
       if (result.status && result.data && result.data.length > 0) {
         return { status: true, data: result.data[0] };
       }
-      
+
       return { status: false, message: "Failed to get count" };
     } catch (error) {
-      logger.error(`Error in FranchiseRepository.getFranchiseCount: ${generateError(error)}`);
+      logger.error(
+        `Error in FranchiseRepository.getFranchiseCount: ${generateError(
+          error
+        )}`
+      );
       return { status: false, message: "Failed to get franchise count" };
     }
   };
 
-  const getAllFranchiseForExport = async (filters: FranchiseSearchFilters = {}): Promise<FranchiseDBResponse> => {
+  const getAllFranchiseForExport = async (
+    filters: FranchiseSearchFilters = {}
+  ): Promise<FranchiseDBResponse> => {
     try {
       let whereClause = "WHERE 1=1";
       const params: any[] = [];
@@ -183,7 +200,8 @@ const FranchiseRepository = () => {
       }
 
       if (filters.search) {
-        whereClause += " AND (business_name LIKE ? OR contact_person LIKE ? OR email LIKE ? OR phone LIKE ?)";
+        whereClause +=
+          " AND (business_name LIKE ? OR contact_person LIKE ? OR email LIKE ? OR phone LIKE ?)";
         const searchTerm = `%${filters.search}%`;
         params.push(searchTerm, searchTerm, searchTerm, searchTerm);
       }
@@ -213,12 +231,19 @@ const FranchiseRepository = () => {
         ${whereClause} 
         ORDER BY created_at DESC
       `;
-      
+
       const result = await MySql.query<Franchise[]>(sql, params);
       return result;
     } catch (error) {
-      logger.error(`Error in FranchiseRepository.getAllFranchiseForExport: ${generateError(error)}`);
-      return { status: false, message: "Failed to fetch franchise inquiries for export" };
+      logger.error(
+        `Error in FranchiseRepository.getAllFranchiseForExport: ${generateError(
+          error
+        )}`
+      );
+      return {
+        status: false,
+        message: "Failed to fetch franchise inquiries for export",
+      };
     }
   };
 
@@ -235,29 +260,32 @@ const FranchiseRepository = () => {
         INSERT INTO ${tableName} (contact_person, email, phone, city, why_franchise, status)
         VALUES (?, ?, ?, ?, ?, ?)
       `;
-      
+
       const params = [
         franchiseData.contact_person,
         franchiseData.email,
         franchiseData.phone,
         franchiseData.city,
         franchiseData.message,
-        franchiseData.status
+        franchiseData.status,
       ];
 
       const result = await MySql.query(sql, params);
-      
-      if (result.status && result.data && result.data.insertId) {
 
+      if (result.status && result.data && result.data.insertId) {
         return {
           status: true,
-          message: "Franchise inquiry created successfully"
+          message: "Franchise inquiry created successfully",
         };
       }
 
       return { status: false, message: "Failed to create franchise inquiry" };
     } catch (error) {
-      logger.error(`Error in FranchiseRepository.createFranchiseInquiry: ${generateError(error)}`);
+      logger.error(
+        `Error in FranchiseRepository.createFranchiseInquiry: ${generateError(
+          error
+        )}`
+      );
       return { status: false, message: "Failed to create franchise inquiry" };
     }
   };
@@ -270,4 +298,4 @@ const FranchiseRepository = () => {
   };
 };
 
-export default FranchiseRepository; 
+export default FranchiseRepository;

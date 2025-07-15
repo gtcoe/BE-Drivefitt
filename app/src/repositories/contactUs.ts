@@ -2,7 +2,10 @@ import MySql from "../database/mySql";
 import { logger } from "../logging";
 import { generateError } from "../services/util";
 import constants from "../config/constants/drivefitt-constants";
-import { ContactUs, ContactUsSearchFilters } from "../models/ContactUs/contactUs";
+import {
+  ContactUs,
+  ContactUsSearchFilters,
+} from "../models/ContactUs/contactUs";
 
 export interface ContactUsDBResponse {
   status: boolean;
@@ -50,7 +53,8 @@ const ContactUsRepository = () => {
       }
 
       if (filters.search) {
-        whereClause += " AND (first_name LIKE ? OR last_name LIKE ? OR email LIKE ? OR phone LIKE ? OR message LIKE ?)";
+        whereClause +=
+          " AND (first_name LIKE ? OR last_name LIKE ? OR email LIKE ? OR phone LIKE ? OR message LIKE ?)";
         const searchTerm = `%${filters.search}%`;
         params.push(searchTerm, searchTerm, searchTerm, searchTerm, searchTerm);
       }
@@ -71,18 +75,24 @@ const ContactUsRepository = () => {
         ORDER BY created_at DESC 
         LIMIT ? OFFSET ?
       `;
-      
+
       params.push(limit, offset);
-      
+
       const result = await MySql.query<ContactUs[]>(sql, params);
       return result;
     } catch (error) {
-      logger.error(`Error in ContactUsRepository.getContactUsEntries: ${generateError(error)}`);
+      logger.error(
+        `Error in ContactUsRepository.getContactUsEntries: ${generateError(
+          error
+        )}`
+      );
       return { status: false, message: "Failed to fetch contact us entries" };
     }
   };
 
-  const getContactUsCount = async (filters: ContactUsSearchFilters = {}): Promise<CountDBResponse> => {
+  const getContactUsCount = async (
+    filters: ContactUsSearchFilters = {}
+  ): Promise<CountDBResponse> => {
     try {
       let whereClause = "WHERE 1=1";
       const params: any[] = [];
@@ -108,7 +118,8 @@ const ContactUsRepository = () => {
       }
 
       if (filters.search) {
-        whereClause += " AND (first_name LIKE ? OR last_name LIKE ? OR email LIKE ? OR phone LIKE ? OR message LIKE ?)";
+        whereClause +=
+          " AND (first_name LIKE ? OR last_name LIKE ? OR email LIKE ? OR phone LIKE ? OR message LIKE ?)";
         const searchTerm = `%${filters.search}%`;
         params.push(searchTerm, searchTerm, searchTerm, searchTerm, searchTerm);
       }
@@ -125,19 +136,25 @@ const ContactUsRepository = () => {
 
       const sql = `SELECT COUNT(*) as count FROM ${tableName} ${whereClause}`;
       const result = await MySql.query<{ count: number }[]>(sql, params);
-      
+
       if (result.status && result.data && result.data.length > 0) {
         return { status: true, data: result.data[0] };
       }
-      
+
       return { status: false, message: "Failed to get count" };
     } catch (error) {
-      logger.error(`Error in ContactUsRepository.getContactUsCount: ${generateError(error)}`);
+      logger.error(
+        `Error in ContactUsRepository.getContactUsCount: ${generateError(
+          error
+        )}`
+      );
       return { status: false, message: "Failed to get contact us count" };
     }
   };
 
-  const getAllContactUsForExport = async (filters: ContactUsSearchFilters = {}): Promise<ContactUsDBResponse> => {
+  const getAllContactUsForExport = async (
+    filters: ContactUsSearchFilters = {}
+  ): Promise<ContactUsDBResponse> => {
     try {
       let whereClause = "WHERE 1=1";
       const params: any[] = [];
@@ -163,7 +180,8 @@ const ContactUsRepository = () => {
       }
 
       if (filters.search) {
-        whereClause += " AND (first_name LIKE ? OR last_name LIKE ? OR email LIKE ? OR phone LIKE ? OR message LIKE ?)";
+        whereClause +=
+          " AND (first_name LIKE ? OR last_name LIKE ? OR email LIKE ? OR phone LIKE ? OR message LIKE ?)";
         const searchTerm = `%${filters.search}%`;
         params.push(searchTerm, searchTerm, searchTerm, searchTerm, searchTerm);
       }
@@ -183,12 +201,19 @@ const ContactUsRepository = () => {
         ${whereClause} 
         ORDER BY created_at DESC
       `;
-      
+
       const result = await MySql.query<ContactUs[]>(sql, params);
       return result;
     } catch (error) {
-      logger.error(`Error in ContactUsRepository.getAllContactUsForExport: ${generateError(error)}`);
-      return { status: false, message: "Failed to fetch contact us entries for export" };
+      logger.error(
+        `Error in ContactUsRepository.getAllContactUsForExport: ${generateError(
+          error
+        )}`
+      );
+      return {
+        status: false,
+        message: "Failed to fetch contact us entries for export",
+      };
     }
   };
 
@@ -204,28 +229,30 @@ const ContactUsRepository = () => {
         INSERT INTO ${tableName} (first_name, last_name, email, phone, message)
         VALUES (?, ?, ?, ?, ?)
       `;
-      
+
       const params = [
         contactUsData.first_name,
         contactUsData.last_name,
         contactUsData.email,
         contactUsData.phone,
-        contactUsData.message
+        contactUsData.message,
       ];
 
       const result = await MySql.query(sql, params);
-      
-      if (result.status && result.data && result.data.insertId) {
 
+      if (result.status && result.data && result.data.insertId) {
         return {
           status: true,
-          message: "Contact us entry created successfully"
+          message: "Contact us entry created successfully",
         };
       }
+      logger.error(`Error in ContactUsRepository.createContactUs: ${result}`);
 
       return { status: false, message: "Failed to create contact us entry" };
     } catch (error) {
-      logger.error(`Error in ContactUsRepository.createContactUs: ${generateError(error)}`);
+      logger.error(
+        `Error in ContactUsRepository.createContactUs: ${generateError(error)}`
+      );
       return { status: false, message: "Failed to create contact us entry" };
     }
   };
@@ -238,4 +265,4 @@ const ContactUsRepository = () => {
   };
 };
 
-export default ContactUsRepository; 
+export default ContactUsRepository;

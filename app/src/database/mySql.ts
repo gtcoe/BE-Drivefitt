@@ -3,8 +3,8 @@ import { logger } from "../logging";
 import dbConfig from "../config/mysql";
 
 // Load environment-specific MySQL config
-const envDBConfig = dbConfig.prod;
-// const envDBConfig = dbConfig.dev;
+// const envDBConfig = dbConfig.prod;
+const envDBConfig = dbConfig.dev;
 
 // Create MySQL connection pool
 const mysqlPool: Pool = mysql.createPool({
@@ -42,26 +42,30 @@ class Mysql {
   ): Promise<{ status: boolean; data: T | null }> {
     // Log the SQL query and parameters
     // logger.info(`SQL Query: ${sql}, { params }: ${ params }`);
-    
+
     return new Promise((resolve, reject) => {
       this.pool.query(sql, params, (err: any, results: any) => {
         if (err) {
-          // Temporarily comment out error handling
-          // reject(this.generateErrorResponse(err));
+          logger.error(`MySQL Error: ${err.message || err}`);
           resolve({ status: false, data: null });
         } else {
-          if (sql.slice(0, 6) === "insert") {
+          if (sql.trim().toLowerCase().slice(0, 6) === "insert") {
             if (!results || typeof results.insertId !== "number") {
-              // throw new Error("Unexpected response from database");
+              logger.error(
+                `INSERT query did not return valid insertId: ${JSON.stringify(
+                  results
+                )}`
+              );
               resolve({ status: false, data: null });
+              return;
             }
           }
           // Log successful query results (limited to prevent excessive logging)
-          // const resultLog = Array.isArray(results) 
-          //   ? `Results: ${results.length} rows returned` 
+          // const resultLog = Array.isArray(results)
+          //   ? `Results: ${results.length} rows returned`
           //   : `Result: ${JSON.stringify(results).substring(0, 200)}${JSON.stringify(results).length > 200 ? '...' : ''}`;
           // logger.info(`SQL Query Success: ${resultLog}`);
-          
+
           resolve({ status: true, data: results });
         }
       });
@@ -98,26 +102,26 @@ class Connection extends Mysql {
   ): Promise<{ status: boolean; data: T | null }> {
     // Log the SQL query and parameters
     // logger.info(`Transaction SQL Query: ${sql}`, { params });
-    
+
     return new Promise((resolve, reject) => {
       this.connection.query(sql, params, (err: any, results: any) => {
         if (err) {
-          // Temporarily comment out error handling
-          // reject(this.generateErrorResponse(err));
+          logger.error(`MySQL Transaction Error: ${err.message || err}`);
           resolve({ status: false, data: null });
         } else {
-          if (sql.slice(0, 6) === "INSERT") {
+          if (sql.trim().toLowerCase().slice(0, 6) === "insert") {
             if (!results || typeof results.insertId !== "number") {
-              // throw new Error("Unexpected response from database");
+              logger.error(`Transaction INSERT query did not return valid insertId: ${JSON.stringify(results)}`);
               resolve({ status: false, data: null });
+              return;
             }
           }
           // Log successful query results (limited to prevent excessive logging)
-          // const resultLog = Array.isArray(results) 
-          //   ? `Results: ${results.length} rows returned` 
+          // const resultLog = Array.isArray(results)
+          //   ? `Results: ${results.length} rows returned`
           //   : `Result: ${JSON.stringify(results).substring(0, 200)}${JSON.stringify(results).length > 200 ? '...' : ''}`;
           // logger.info(`Transaction SQL Query Success: ${resultLog}`);
-          
+
           resolve({ status: true, data: results });
         }
       });
@@ -131,8 +135,7 @@ class Connection extends Mysql {
           // Temporarily comment out error handling
           // reject(this.generateErrorResponse(err));
           resolve();
-        }
-        else resolve();
+        } else resolve();
       });
     });
   }
@@ -144,8 +147,7 @@ class Connection extends Mysql {
           // Temporarily comment out error handling
           // reject(this.generateErrorResponse(err));
           resolve();
-        }
-        else resolve();
+        } else resolve();
       });
     });
   }
