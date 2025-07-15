@@ -25,6 +25,17 @@ router.use("/admin/upload", uploadRoutes);
 router.use("/users", userRoutes);
 
 // Public routes for Brand Website (no authentication required)
+
+// Health check endpoint
+router.get("/public/health", (req, res) => {
+  res.json({
+    status: "ok",
+    message: "API is working",
+    timestamp: new Date().toISOString(),
+    environment: process.env.NODE_ENV || "unknown",
+  });
+});
+
 // Public Blog Routes - Only published blogs (status = 1)
 router.get("/public/blogs", (req, res) => {
   req.query.status = "1"; // Only published blogs
