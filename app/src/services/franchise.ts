@@ -4,9 +4,9 @@ import constants from "../config/constants/drivefitt-constants";
 import cacheService from "../services/cacheService";
 import Response from "../models/response";
 import FranchiseRepositoryFactory from "../repositories/franchise";
-import { 
-  FranchiseSearchFilters, 
-  FranchiseListResponse 
+import {
+  FranchiseSearchFilters,
+  FranchiseListResponse,
 } from "../models/Franchise/franchise";
 
 const FranchiseService = () => {
@@ -28,7 +28,10 @@ const FranchiseService = () => {
 
       const cacheParams = { page, limit, filters };
 
-      const cachedData = cacheService.getListCache<FranchiseListResponse>(moduleKey, cacheParams);
+      const cachedData = cacheService.getListCache<FranchiseListResponse>(
+        moduleKey,
+        cacheParams
+      );
       if (cachedData) {
         response.setStatus(true);
         response.setData("franchiseInquiries", cachedData.franchiseInquiries);
@@ -44,18 +47,22 @@ const FranchiseService = () => {
 
       const [franchiseResult, countResult] = await Promise.all([
         franchiseRepository.getFranchiseInquiries(page, limit, filters),
-        franchiseRepository.getFranchiseCount(filters)
+        franchiseRepository.getFranchiseCount(filters),
       ]);
 
       if (!franchiseResult.status) {
         response.setStatusCode(500);
-        response.setMessage(franchiseResult.message || constants.ERROR_MESSAGES.SERVER_ERROR);
+        response.setMessage(
+          franchiseResult.message || constants.ERROR_MESSAGES.SERVER_ERROR
+        );
         return response;
       }
 
       if (!countResult.status) {
         response.setStatusCode(500);
-        response.setMessage(countResult.message || constants.ERROR_MESSAGES.SERVER_ERROR);
+        response.setMessage(
+          countResult.message || constants.ERROR_MESSAGES.SERVER_ERROR
+        );
         return response;
       }
 
@@ -71,7 +78,12 @@ const FranchiseService = () => {
         totalPages,
       };
 
-      cacheService.setListCache(moduleKey, cacheParams, responseData, constants.CACHE_TTL.MEDIUM);
+      cacheService.setListCache(
+        moduleKey,
+        cacheParams,
+        responseData,
+        constants.CACHE_TTL.MEDIUM
+      );
 
       response.setStatus(true);
       response.setData("franchiseInquiries", franchiseInquiries);
@@ -83,24 +95,33 @@ const FranchiseService = () => {
       });
       response.setMessage(constants.SUCCESS_MESSAGES.FETCHED);
       return response;
-
     } catch (error) {
-      logger.error(`Error in FranchiseService.getFranchiseInquiries: ${generateError(error)}`);
+      logger.error(
+        `Error in FranchiseService.getFranchiseInquiries: ${generateError(
+          error
+        )}`
+      );
       response.setStatusCode(500);
       response.setMessage(constants.ERROR_MESSAGES.SERVER_ERROR);
       return response;
     }
   };
 
-  const exportFranchiseData = async (filters: FranchiseSearchFilters = {}): Promise<Response> => {
+  const exportFranchiseData = async (
+    filters: FranchiseSearchFilters = {}
+  ): Promise<Response> => {
     const response = new Response(false);
 
     try {
-      const result = await franchiseRepository.getAllFranchiseForExport(filters);
+      const result = await franchiseRepository.getAllFranchiseForExport(
+        filters
+      );
 
       if (!result.status) {
         response.setStatusCode(500);
-        response.setMessage(result.message || constants.ERROR_MESSAGES.SERVER_ERROR);
+        response.setMessage(
+          result.message || constants.ERROR_MESSAGES.SERVER_ERROR
+        );
         return response;
       }
 
@@ -108,9 +129,10 @@ const FranchiseService = () => {
       response.setData("franchiseInquiries", result.data || []);
       response.setMessage("Data ready for export");
       return response;
-
     } catch (error) {
-      logger.error(`Error in FranchiseService.exportFranchiseData: ${generateError(error)}`);
+      logger.error(
+        `Error in FranchiseService.exportFranchiseData: ${generateError(error)}`
+      );
       response.setStatusCode(500);
       response.setMessage(constants.ERROR_MESSAGES.SERVER_ERROR);
       return response;
@@ -128,25 +150,32 @@ const FranchiseService = () => {
     const response = new Response(false);
 
     try {
-      const result = await franchiseRepository.createFranchiseInquiry(franchiseData);
+      const result = await franchiseRepository.createFranchiseInquiry(
+        franchiseData
+      );
 
       if (!result.status) {
         response.setStatusCode(500);
-        response.setMessage(result.message || constants.ERROR_MESSAGES.SERVER_ERROR);
+        response.setMessage(
+          result.message || constants.ERROR_MESSAGES.SERVER_ERROR
+        );
         return response;
       }
 
       // Clear cache after creating new entry
-      cacheService.clearCacheByKey(moduleKey);
+      cacheService.invalidateModuleCache(moduleKey);
 
       response.setStatus(true);
       response.setStatusCode(201);
       response.setData("franchise", result.data);
       response.setMessage("Franchise inquiry submitted successfully");
       return response;
-
     } catch (error) {
-      logger.error(`Error in FranchiseService.createFranchiseInquiry: ${generateError(error)}`);
+      logger.error(
+        `Error in FranchiseService.createFranchiseInquiry: ${generateError(
+          error
+        )}`
+      );
       response.setStatusCode(500);
       response.setMessage(constants.ERROR_MESSAGES.SERVER_ERROR);
       return response;
@@ -160,4 +189,4 @@ const FranchiseService = () => {
   };
 };
 
-export default FranchiseService; 
+export default FranchiseService;

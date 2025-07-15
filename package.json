@@ -4,16 +4,14 @@
   "description": "Backend API for DriveFitt application",
   "main": "build/src/index.js",
   "scripts": {
-    "build": "tsx app/src/index.ts",
+    "build": "tsc",
     "start": "node build/src/index.js",
-    "dev2": "ts-node-dev --respawn --transpile-only app/src/index.ts",
+    "dev": "tsx app/src/index.ts",
     "dev:watch": "nodemon --exec ts-node app/src/index.ts",
     "clean": "rimraf build",
     "typecheck": "tsc --noEmit",
     "lint": "eslint app/src/**/*.ts",
-    "lint:fix": "eslint app/src/**/*.ts --fix",
-    "dev": "tsx app/src/index.ts",
-    "build2": "tsx app/src/index.ts"
+    "lint:fix": "eslint app/src/**/*.ts --fix"
   },
   "keywords": [
     "nodejs",
@@ -42,7 +40,7 @@
     "multer": "^1.4.5-lts.1",
     "mysql2": "^3.6.5",
     "node-cache": "^5.1.2",
-    "sharp": "^0.34.2",
+    "sharp": "^0.34.3",
     "underscore": "^1.13.7",
     "winston": "^3.11.0"
   },

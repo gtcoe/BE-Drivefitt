@@ -136,7 +136,7 @@ const ContactUsService = () => {
       }
 
       // Clear cache after creating new entry
-      cacheService.clearCacheByKey(moduleKey);
+      cacheService.invalidateModuleCache(moduleKey);
 
       response.setStatus(true);
       response.setStatusCode(201);
